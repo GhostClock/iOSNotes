@@ -130,6 +130,9 @@
     CGContextStrokeEllipseInRect(ctx, layer.bounds);
 }
 
+#pragma mark - 图层几何学
+
+
 
 
 
