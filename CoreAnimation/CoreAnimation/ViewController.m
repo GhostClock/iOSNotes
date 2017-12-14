@@ -9,7 +9,7 @@
 #import "ViewController.h"
 #import <QuartzCore/QuartzCore.h>
 
-@interface ViewController ()
+@interface ViewController ()<CALayerDelegate>
 
 @end
 
@@ -19,10 +19,16 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     self.view.backgroundColor = [UIColor lightGrayColor];
-    [self Spriteimage];
+//    [self Spriteimage];
+    
+//    [self contentsCenter];
+    
+    [self customDrawimg];
+    
+    
 }
 
-//初探layer
+#pragma mark - 初探layer
 - (void)knowLayer {
     UIView *layerview = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)];
     layerview.backgroundColor = [UIColor whiteColor];
@@ -48,7 +54,7 @@
     layerview.layer.masksToBounds = YES;
     
 }
-//拆分图片显示
+#pragma mark - 拆分图片显示
 - (void)Spriteimage {
     UIView *v1 = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 200, 200)];
     UIView *v2 = [[UIView alloc]initWithFrame:CGRectMake(200, 0, 200, 200)];
@@ -71,6 +77,87 @@
     layer.contentsGravity = kCAGravityResize;
     layer.contentsRect = rect;
 }
+
+#pragma mark - contentsCenter 边角不拉伸
+- (void)contentsCenter {
+    UIButton *button1 = [UIButton buttonWithType:UIButtonTypeCustom];
+    button1.frame = CGRectMake(10, 100, 300, 100);
+    button1.backgroundColor = [UIColor redColor];
+    [self.view addSubview:button1];
+    
+    UIButton *button2 = [UIButton buttonWithType:UIButtonTypeCustom];
+    button2.frame = CGRectMake(100, 300, 100, 300);
+    button2.backgroundColor = [UIColor blueColor];
+    [self.view addSubview:button2];
+    
+    UIImage *image = [UIImage imageNamed:@"button"];
+    [self addStretchableImage:image withContentCenter:CGRectMake(0.25, 0.25, 0.5, 0.5) toLayer:button1.layer];
+    [self addStretchableImage:image withContentCenter:CGRectMake(0.25, 0.25, 0.5, 0.5) toLayer:button2.layer];
+}
+
+- (void)addStretchableImage:(UIImage *)image withContentCenter:(CGRect)rect toLayer:(CALayer *)layer{
+    layer.contents = (__bridge id)image.CGImage;
+    layer.contentsCenter = rect;
+}
+
+#pragma mark - Custom Drawimg
+
+- (void)customDrawimg {
+    UIView *view = [[UIView alloc]initWithFrame:CGRectMake(100, 100, 200, 200)];
+    view.backgroundColor = [UIColor whiteColor];
+    [self.view addSubview:view];
+    
+    //创建父layer
+    CALayer *bluelayer = [CALayer layer];
+    bluelayer.frame = CGRectMake(50, 50, 100, 100);
+    bluelayer.backgroundColor = [UIColor blueColor].CGColor;
+    
+    //设置代理
+    bluelayer.delegate = self;
+    
+    //添加layer到视图
+    bluelayer.contentsScale = [UIScreen mainScreen].scale;
+    [view.layer addSublayer:bluelayer];
+    
+    //开始绘制图层
+    [bluelayer display];
+}
+//实现其代理
+- (void)drawLayer:(CALayer *)layer inContext:(CGContextRef)ctx {
+    CGContextSetLineWidth(ctx, 10);// 有宽度的圆
+//    CGContextSetLineJoin(ctx, 10.);
+    CGContextSetStrokeColorWithColor(ctx, [UIColor redColor].CGColor);
+    CGContextStrokeEllipseInRect(ctx, layer.bounds);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
