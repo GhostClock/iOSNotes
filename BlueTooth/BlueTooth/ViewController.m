@@ -42,10 +42,29 @@
     [[BlueToothManager shanderManager] initWithBlueTooth];
     
     typeof(self)weakSelf = self;
-    [[BlueToothManager shanderManager]getBlueToothData:^(NSMutableArray *blueToothDeviceArray) {
-        weakSelf.dataSourceArray = blueToothDeviceArray;
-        [weakSelf.tableView reloadData];
+    [[BlueToothManager shanderManager] getBlueToothData:^(CBCentralManager *central, CBPeripheral *peripheral, NSDictionary *advertisementData, NSNumber *RSSI) {
+        [weakSelf insertTableView:peripheral advertisementData:advertisementData RSSI:RSSI];
     }];
+}
+
+//插入table数据
+-(void)insertTableView:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
+    
+    NSArray *peripherals = [self.dataSourceArray valueForKey:@"peripheral"];
+    if (![peripherals containsObject:peripheral]) {
+        NSMutableArray *indexPaths = [[NSMutableArray alloc]init];
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:indexPaths.count inSection:0];
+        [indexPaths addObject:indexPath];
+        
+        NSMutableDictionary *item = [[NSMutableDictionary alloc]init];
+        [item setValue:peripheral forKey:@"peripheral"];
+        [item setValue:RSSI forKey:@"RSSI"];
+        [item setValue:advertisementData forKey:@"advertisementData"];
+        [self.dataSourceArray addObject:item];
+        
+        [self.tableView insertRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationAutomatic];
+    }
+  
 }
 
 //创建TableView用以显示
@@ -82,13 +101,15 @@
     }
     
     NSDictionary *dict = self.dataSourceArray[indexPath.row];
-    for (NSUUID *uuid in dict) {
-        NSArray *perArray = dict[uuid];
-        CBPeripheral *peripheral = perArray[0];
-        cell.name.text = [NSString stringWithFormat:@"%@", peripheral.name ? peripheral.name : @"未知设备"];
-        cell.uuid.text = [NSString stringWithFormat:@"%@", peripheral.identifier];
-        cell.signal.text = [NSString stringWithFormat:@"%@", perArray[1]];
-    }
+    
+    CBPeripheral *peripheral = dict[@"peripheral"];
+    NSNumber *RSSI = dict[@"RSSI"];
+    NSDictionary *advertisementData = dict[@"advertisementData"];
+    
+    cell.name.text = [NSString stringWithFormat:@"%@", peripheral.name ];
+    cell.uuid.text = [NSString stringWithFormat:@"%@", peripheral.identifier];
+    cell.signal.text = [NSString stringWithFormat:@"%@", RSSI];
+    
     return cell;
 }
 
@@ -102,13 +123,11 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSDictionary *dict = self.dataSourceArray[indexPath.row];
-    for (NSUUID *uuid in dict) {
-        CBPeripheral *periperal = dict[uuid][0];
-        [[BlueToothManager shanderManager] connectPeripheral:periperal];
-        ConnectViewController *connectVC = [[ConnectViewController alloc]init];
-        [self.navigationController pushViewController:connectVC animated:YES];
-    }
+    CBPeripheral *periperal = dict[@"peripheral"];
     
+    [[BlueToothManager shanderManager] connectPeripheral:periperal];
+    ConnectViewController *connectVC = [[ConnectViewController alloc]init];
+    [self.navigationController pushViewController:connectVC animated:YES];
 }
 
 - (void)didReceiveMemoryWarning {

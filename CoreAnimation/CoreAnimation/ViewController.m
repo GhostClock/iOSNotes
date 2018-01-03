@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import <QuartzCore/QuartzCore.h>
+#import <objc/runtime.h>
 
 @interface ViewController ()<CALayerDelegate>
 
@@ -128,6 +129,8 @@
 //    CGContextSetLineJoin(ctx, 10.);
     CGContextSetStrokeColorWithColor(ctx, [UIColor redColor].CGColor);
     CGContextStrokeEllipseInRect(ctx, layer.bounds);
+    
+    id __weak obj = [[NSObject alloc]init];
 }
 
 #pragma mark - 图层几何学

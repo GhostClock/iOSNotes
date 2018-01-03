@@ -8,10 +8,10 @@
 
 #import "BlueToothManager.h"
 
-typedef void(^BlueToothArrayBlock)(NSMutableArray *blePerArray);
+typedef void(^BlueToothsBlock)(CBCentralManager *central,CBPeripheral *peripheral,NSDictionary *advertisementData, NSNumber *RSSI);
 
 @interface BlueToothManager()<CBCentralManagerDelegate, CBPeripheralDelegate>{
-    BlueToothArrayBlock _blueToothArrayBlock;
+    BlueToothsBlock _blueToothsBlock;
 }
 
 @property (strong, nonatomic) CBCentralManager *manager;///< 中央设备
@@ -95,24 +95,16 @@ typedef void(^BlueToothArrayBlock)(NSMutableArray *blePerArray);
 
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary<NSString *,id> *)advertisementData RSSI:(NSNumber *)RSSI {
     
-    NSDictionary *dict = [NSDictionary dictionaryWithObject:@[peripheral, RSSI]  forKey:peripheral.identifier];
-    
-    for (int i = 0; i < self.bleViewPerArray.count; i ++) {
-        NSDictionary *perDict = self.bleViewPerArray[i];
-        for (NSUUID *uuid in perDict) {
-            if (uuid == peripheral.identifier) {
-                [self.bleViewPerArray removeObjectAtIndex:i];
-            }
+    if (peripheral.name && advertisementData && RSSI) {
+        
+        if (_blueToothsBlock) {
+            _blueToothsBlock(central, peripheral, advertisementData, RSSI);
         }
-    }
-    [self.bleViewPerArray addObject:dict];
-    if (_blueToothArrayBlock) {
-        _blueToothArrayBlock(self.bleViewPerArray);
     }
 }
 
-- (void)getBlueToothData:(void (^)(NSMutableArray *))blueToothData{
-    _blueToothArrayBlock = [blueToothData copy];
+- (void)getBlueToothData:(void(^)(CBCentralManager *central, CBPeripheral *peripheral, NSDictionary *advertisementData, NSNumber *RSSI))blueToothData{
+    _blueToothsBlock = [blueToothData copy];
 }
 
 #pragma mark - 连接设备后

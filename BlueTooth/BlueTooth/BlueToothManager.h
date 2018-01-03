@@ -35,8 +35,9 @@ typedef NS_ENUM(NSInteger, BluetoothFailState) {
 - (void)initWithBlueTooth;///< 初始化蓝牙
 - (void)scaning;///< 开始扫描
 - (void)stop;///< 停止扫描
-- (void)connectPeripheral:(CBPeripheral *)peripheral;///< 连接设备
+- (void)connectPeripheral:(CBPeripheral *)peripheral ;///< 连接设备
 
-- (void)getBlueToothData:(void(^)(NSMutableArray *blueToothDeviceArray))blueToothData;
+
+- (void)getBlueToothData:(void(^)(CBCentralManager *central,CBPeripheral *peripheral,NSDictionary *advertisementData, NSNumber *RSSI))blueToothData;
 
 @end
